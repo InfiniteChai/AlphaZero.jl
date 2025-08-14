@@ -12,6 +12,7 @@ using CUDA
 using Base: @kwdef
 
 import Flux
+import Functors
 
 CUDA.allowscalar(false)
 array_on_gpu(::Array) = false
@@ -41,7 +42,7 @@ network interface with the following exceptions:
 """
 abstract type FluxNetwork <: AbstractNetwork end
 
-function Base.copy(nn::Net) where Net <: FluxNetwork
+function Base.copy(nn::Net) where Net<:FluxNetwork
   #new = Net(Network.hyperparams(nn))
   #Flux.loadparams!(new, Flux.params(nn))
   #return new
@@ -86,7 +87,7 @@ function Network.train!(callback, nn::FluxNetwork, opt::Adam, loss, data, n)
 end
 
 function Network.train!(
-    callback, nn::FluxNetwork, opt::CyclicNesterov, loss, data, n)
+  callback, nn::FluxNetwork, opt::CyclicNesterov, loss, data, n)
   lr = CyclicSchedule(
     opt.lr_base,
     opt.lr_high,
@@ -146,7 +147,7 @@ function Network.forward(nn::TwoHeadNetwork, state)
 end
 
 # Flux.@functor does not work with abstract types
-function Flux.functor(nn::Net) where Net <: TwoHeadNetwork
+function Functors.functor(nn::Net) where Net<:TwoHeadNetwork
   children = (nn.common, nn.vhead, nn.phead)
   constructor = cs -> Net(nn.gspec, nn.hyper, cs...)
   return (children, constructor)
